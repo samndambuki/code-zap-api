@@ -8,12 +8,10 @@ router.get('/',(req,res)=>{
     res.send('user route');
 })
 
-//login
-//create account
-
+//create account 
 router.post('/',(req,res)=>{
     let userObj = req.body;
-    userObj.password = CryptoJS.AES.encrypt(userObj.password,'1234567').toString();
+    userObj.password = CryptoJs.AES.encrypt(userObj.password,'1234567').toString();
     userObj['userid'] = uuidv4();
     let newUser = new userModel(userObj);
     newUser.save().then((doc)=>{
@@ -24,6 +22,8 @@ router.post('/',(req,res)=>{
     });
 })
 
+
+//login
 router.post('/login',(req,res)=>{
     let data = req.body;
     userModel.findOne({
@@ -32,7 +32,7 @@ router.post('/login',(req,res)=>{
         if(userDoc==null){
             res.json({error:true,message:"account does not exist"})
         }else{
-            let decryptedPassword = CryptoJs.AES.decrypt(userDoc.password,'1234567').toString(CryptoJS.enc.Utf8);
+            let decryptedPassword = CryptoJs.AES.decrypt(userDoc.password,'1234567').toString(CryptoJs.enc.Utf8);
             if(decryptedPassword == data.password){
                 res.json({error:false,response:userDoc});
             }else{
