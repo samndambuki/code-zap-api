@@ -24,4 +24,22 @@ router.post('/',(req,res)=>{
     });
 })
 
+router.post('/login',(req,res)=>{
+    let data = req.body;
+    userModel.findOne({
+        email:data.email
+    }).then((userDoc)=>{
+        if(userDoc==null){
+            res.json({error:true,message:"account does not exist"})
+        }else{
+            let decryptedPassword = CryptoJs.AES.decrypt(userDoc.password,'1234567').toString(CryptoJS.enc.Utf8);
+            if(decryptedPassword == data.password){
+                res.json({error:false,response:userDoc});
+            }else{
+                res.json({error:true,message:"incorrect password"});
+            }
+        }
+    }).catch();
+})
+
 module.exports = router;
