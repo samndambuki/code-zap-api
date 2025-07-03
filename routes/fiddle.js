@@ -78,9 +78,57 @@ router.get('/user/:userid',(req,res)=>{
     })
 })
 
-
+//post endpoint at root path /fiddles
+//POST - create new resources
+//(req,res) - callback function
 router.post('/',(req,res)=>{
+    //req.body contains all request data(code,name,language,fiddleid,userid)
     let fiddleObj = req.body;
+    //add a unique identifier to fiddle object
+    //uuidv4 - generates random uuid
+    //each fiddle has a unique id
     fiddleObj['fiddleid'] = uuidv4();
-    let newFiddle = new fiddleModel.new(fiddleObj)
+    //creates a new mongoose document instance from fiddle object
+    let newFiddle = new fiddleModel(fiddleObj)
+    newFiddle.save().then((doc)=>{
+          if(!doc){
+            return res.status(404).json({error:true,message:'fiddle not found'})
+          }
+          res.status(200).json({error:false,response:doc})
+    }).catch((error)=>{
+        console.log(error);
+        res.status(500).json({error:true,message:'database error'})
+    })
 })
+
+
+router.put('/',(req,res)=>{
+    //fiddleModel - mongoose model
+    //updateOne - updates one document in the database
+    fiddleModel.updateOne(
+        //specifies which document to update
+        //looks for a documrent where fiddleid matches req.body.fiddleid
+        //req.body.fiddleid - extracts fiddleid from the request body(json data sent by the client)
+        {fiddleid:req.body.fiddleid}
+    ).then((_)=>{
+        res.status(200).json({error:false,message:'fiddle updated'})
+    }).catch((error)=>{
+        res.status(500).json({error:true,message:'database error'})
+    })                                                                                 
+})                                                                             
+
+
+
+router.delete('/:fiddleid',(req,res)=>{
+    fiddleModel.deleteOne({fiddleid:req.params.fiddleid})
+    //then - handles successful deletion
+    // _ - result is ignored
+    .then((_)=>{
+        res.status(200).json({error:false,message:'fiddle deleted'})
+    }).catch((error)=>{
+        res.status(500).json({error:true,message:'database error'})
+    })
+})
+
+
+module.exports = router;

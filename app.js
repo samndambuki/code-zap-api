@@ -3,6 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 const userRoute = require('./routes/user');
+const fiddleRoute = require('./routes/fiddle')
 
 const app = express();
 app.use(cors({
@@ -16,6 +17,8 @@ app.get('/',(req,res)=>{
 });
 
 app.use('/users',userRoute)
+
+app.use('/fiddles',fiddleRoute)
 
 mongoose.connect('mongodb+srv://codezap:samndambuki@cluster0.m8hcorh.mongodb.net/codezap?retryWrites=true&w=majority&appName=Cluster0',{
     useNewUrlParser:true,
