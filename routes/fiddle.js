@@ -17,6 +17,7 @@ const fiddleModel = require('../models/fiddle');
 //commonly used for :
 //user IDs , session tokens, unique identifiers for any resource
 const {v4:uuidv4} = require('uuid');
+const fiddle = require('../models/fiddle');
 
 
 // endpoints 
@@ -83,7 +84,11 @@ router.get('/user/:userid',(req,res)=>{
 //(req,res) - callback function
 router.post('/',(req,res)=>{
     //req.body contains all request data(code,name,language,fiddleid,userid)
-    let fiddleObj = req.body;
+    //get json data sent by the client
+    const fiddleObj = req.body;
+    if(typeof fiddleObj !=='object' || !fiddleObj.userid){
+        return res.status(400).json({error:true,message:'invalid request body:userid required'})
+    }
     //add a unique identifier to fiddle object
     //uuidv4 - generates random uuid
     //each fiddle has a unique id
@@ -102,22 +107,33 @@ router.post('/',(req,res)=>{
 })
 
 
+// / - root path
 router.put('/',(req,res)=>{
-    //fiddleModel - mongoose model
-    //updateOne - updates one document in the database
+    const {fiddleid,name,code,language,userid} = req.body;
+    if(!fiddleid){
+        res.status(400).json({error:true,message:'fiddleid is required'})
+    }
+    //update document in mongodb
     fiddleModel.updateOne(
-        //specifies which document to update
-        //looks for a documrent where fiddleid matches req.body.fiddleid
-        //req.body.fiddleid - extracts fiddleid from the request body(json data sent by the client)
-        {fiddleid:req.body.fiddleid}
-    ).then((_)=>{
-        res.status(200).json({error:false,message:'fiddle updated'})
+        //find document by fiddleid
+        {fiddleid},
+        //set new values
+        {$set:{name,code,language,userid}},
+        //enforce schema validation during update
+        {runValidators:true}
+    ).then((result)=>{
+        //macthed count tells how many documents matched the fiddleid
+        if(result.matchedCount === 0 ){
+            return res.status(404).json({error:true,message:'fiddle not found'})
+        }
+        return fiddleModel.findOne({fiddleid}).then((doc)=>{
+            res.status(200).json({error:false,response:doc})
+        })
     }).catch((error)=>{
+        console.log(error)
         res.status(500).json({error:true,message:'database error'})
-    })                                                                                 
-})                                                                             
-
-
+    })
+})
 
 router.delete('/:fiddleid',(req,res)=>{
     fiddleModel.deleteOne({fiddleid:req.params.fiddleid})
