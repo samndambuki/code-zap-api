@@ -26,7 +26,7 @@ app.post('/execute',(req,res)=>{
     reqObj['clientId'] = "2669433e432c3100325cfa88e3a1c766"
     reqObj["clientSecret"] = "f2b266e0384a9b3990e55d870c291b4c33f007a5720ab789d02aff054cc938ca"
     axios.post('https://api.jdoodle.com/v1/execute',reqObj).then((resp)=>{
-        res.status(200).json({error:false,response:resp})
+        res.status(200).json({error:false,response:resp.data})
     }).catch((error)=>{
         console.log(error);
         res.status(500).json({error:true,response:error})
